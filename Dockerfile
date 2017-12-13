@@ -1,11 +1,16 @@
 FROM python:2.7-alpine3.6
 
-RUN apk add --update gcc g++ musl-dev \
+RUN apk --no-cache add --virtual build-deps gcc g++ musl-dev \
 	&& pip install linkchecker --upgrade \
-	&& pip install requests==2.9.2
+	&& pip install requests==2.9.2 \
+	&& pip install boto3 \
+      	&& apk del --purge -r build-deps
 
-WORKDIR /app
+RUN mkdir -p /.linkchecker/plugins
 
-ENTRYPOINT ["linkchecker"]
+WORKDIR /linkchecker
+ADD ./linkchecker.py /linkchecker
 
-CMD ["-V"]
+USER nobody
+
+ENTRYPOINT ["python", "linkchecker.py"]
